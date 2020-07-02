@@ -8,6 +8,7 @@
 
 from __future__ import print_function
 
+import time
 from datetime import datetime, timezone, timedelta
 
 from dateutil.parser import *
@@ -52,7 +53,7 @@ def free_busy(service):
     timeMax = finweekdate.isoformat() + 'Z'
 
 
-    print ('\n=== Available Times ===\n')
+    print ('\n=== Available Times ({}) ===\n'.format(time.localtime().tm_zone))
 
     # Fix: query multiple calendars
     calendar_id = 'primary'
