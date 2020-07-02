@@ -116,6 +116,34 @@ def free_busy(service):
 
 ########
 
+def print_today(service):
+
+
+    t = datetime.utcnow()
+    local_time = t.astimezone(tzlocal())
+
+    timeMin = datetime(t.year, t.month, t.day)
+    timeMin = timeMin.isoformat() + 'Z' # 'Z' indicates UTC time
+    enddate = datetime(t.year, t.month, t.day, 23, 59, 59)
+    timeMax = enddate.isoformat() + 'Z'
+
+    events_result = service.events().list(calendarId='primary', timeMin=timeMin, timeMax=timeMax, singleEvents=True, orderBy='startTime').execute()
+    events = events_result.get('items', [])
+
+    print('\n= {} =\n= Contents =\n'.format(local_time.strftime('%Y-%m-%d')))
+
+    if not events:
+        print('No upcoming events found.')
+
+    for event in events:
+        start = event['start'].get('dateTime', event['start'].get('date'))
+        starttime = parse(start)
+
+        # Vimwiki Format
+        print('== {} ({}) =='.format(event['summary'], starttime.strftime(timefmt)))
+
+########
+
 def print_week(service):
 
     print ('\n=== Week Schedule ===\n')
@@ -131,7 +159,8 @@ def print_week(service):
         print('No upcoming events found.')
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
-        print(start, '\t', event['summary'])
+        starttime = parse(start)
+        print(starttime.strftime(dtfmt), '\t', event['summary'])
 
 ########
 
@@ -148,7 +177,8 @@ def print_next(service):
         print('No upcoming events found.')
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
-        print(start, event['summary'])
+        starttime = parse(start)
+        print(starttime.strftime(dtfmt), event['summary'])
 
 
 #######
@@ -198,7 +228,7 @@ def main():
 
     # Print various outputs
     if len(sys.argv) < 2:
-        print_next(service)
+        print_today(service)
 
     if args.week:
         print_week(service)
