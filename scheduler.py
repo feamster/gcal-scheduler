@@ -1,3 +1,11 @@
+#!/usr/bin/env python3
+
+#
+# Nick Feamster
+# July 2020
+# Use Google calendar API to produce simple text output
+#
+
 from __future__ import print_function
 
 from datetime import datetime, timezone, timedelta
@@ -22,6 +30,7 @@ from google.auth.transport.requests import Request
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
 
+# Simple spec for time format
 datefmt = '%a %b %d'
 timefmt = '%H:%M'
 dtfmt = datefmt + ' ' + timefmt
@@ -128,6 +137,7 @@ def print_week(service):
 
 def print_next(service):
     now = datetime.utcnow().isoformat() + 'Z' # 'Z' indicates UTC time
+
     print('=== Next 10 Events ===')
     events_result = service.events().list(calendarId='primary', timeMin=now,
                                         maxResults=10, singleEvents=True,
@@ -145,11 +155,15 @@ def print_next(service):
 def get_creds():
 
     creds = None
+    path = os.path.dirname(os.path.realpath(__file__))
+
+    cfile = path + '/credentials.json'
+    tfile = path + '/token.pickle'
 
     # The file token.pickle stores the user's access and refresh tokens, and is
     # created automatically when the authorization flow completes for the first time.
-    if os.path.exists('token.pickle'):
-        with open('token.pickle', 'rb') as token:
+    if os.path.exists(tfile):
+        with open(tfile, 'rb') as token:
             creds = pickle.load(token)
 
     # If there are no (valid) credentials available, let the user log in.
@@ -159,10 +173,10 @@ def get_creds():
             creds.refresh(Request())
         else:
             flow = InstalledAppFlow.from_client_secrets_file(
-                'credentials.json', SCOPES)
+                cfile, SCOPES)
             creds = flow.run_local_server(port=0)
         # Save the credentials for the next run
-        with open('token.pickle', 'wb') as token:
+        with open(tfile, 'wb') as token:
             pickle.dump(creds, token)
 
     service = build('calendar', 'v3', credentials=creds)
@@ -172,14 +186,17 @@ def get_creds():
 
 def main():
     
+    # Argument Parsing
     parser = argparse.ArgumentParser(description='Parse Schedule.')
     parser.add_argument('-f', '--free', help='print free times', action="store_true") 
     parser.add_argument('-n', '--next', help='print next 10 appointments', action="store_true") 
     parser.add_argument('-w', '--week', help='print next week of appointments', action="store_true") 
     args = parser.parse_args()
 
+    # Set up API
     service = get_creds()
 
+    # Print various outputs
     if len(sys.argv) < 2:
         print_next(service)
 
