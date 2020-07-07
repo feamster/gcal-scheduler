@@ -27,6 +27,8 @@ from googleapiclient.discovery import build
 from google_auth_oauthlib.flow import InstalledAppFlow
 from google.auth.transport.requests import Request
 
+import pyperclip
+
 ########
 # If modifying these scopes, delete the file token.pickle.
 SCOPES = ['https://www.googleapis.com/auth/calendar.readonly']
@@ -53,7 +55,8 @@ def free_busy(service):
     timeMax = finweekdate.isoformat() + 'Z'
 
 
-    print ('\n=== Available Times ({}) ===\n'.format(time.localtime().tm_zone))
+    freestr = '\n=== Available Times ({}) ===\n'.format(time.localtime().tm_zone)
+    print (freestr)
 
     # Fix: query multiple calendars
     calendar_id = 'primary'
@@ -112,8 +115,12 @@ def free_busy(service):
                 start_free = local_time + relativedelta(minutes=-0)
 
             if not last_b and b:
+                freestr = freestr + '{} - {}\n'.format(start_free.strftime(dtfmt), \
+                        local_time.strftime(timefmt))
                 print(start_free.strftime(dtfmt), '-', local_time.strftime(timefmt))
             last_b = b
+
+    pyperclip.copy(freestr)
 
 ########
 
