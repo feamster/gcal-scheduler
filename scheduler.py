@@ -17,6 +17,7 @@ from dateutil.relativedelta import *
 
 from datetimerange import DateTimeRange
 
+import re
 import json
 import argparse
 
@@ -91,7 +92,7 @@ def free_busy(service):
             # busy varuable
             b = 0
 
-            # fix: make this configurable
+            # FIX: make this configurable
             # block out times except for those within a range of the day
             local_time = value.astimezone(tzlocal())
             if local_time.hour < 13 or \
@@ -126,6 +127,7 @@ def free_busy(service):
 
 def print_today(service):
 
+    # This function prints today's events in Vimwiki format
 
     t = datetime.utcnow()
     local_time = t.astimezone(tzlocal())
@@ -147,8 +149,16 @@ def print_today(service):
         start = event['start'].get('dateTime', event['start'].get('date'))
         starttime = parse(start)
 
+        eventstr = event['summary']
+
+        # Cleanup Event Names to Remove Own Name
+        # FIX: Move this into a function that generalizes
+        eventstr = re.sub(r' and Nick Feamster', '', eventstr)
+        eventstr = re.sub(r'\/Nick', '', eventstr)
+        eventstr = re.sub(r'Nick\/', '', eventstr)
+
         # Vimwiki Format
-        print('== {} ({}) =='.format(event['summary'], starttime.strftime(timefmt)))
+        print('== {} ({}) =='.format(eventstr, starttime.strftime(timefmt)))
 
 ########
 
