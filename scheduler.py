@@ -128,19 +128,22 @@ def free_busy(service):
 def print_today(service):
 
     # This function prints today's events in Vimwiki format
+    # use now() instead of UTC now to make sure we're getting *today*
+    t = datetime.now()
+    lt = t.astimezone(tzlocal())
 
-    t = datetime.utcnow()
-    local_time = t.astimezone(tzlocal())
+    local_tz = lt.strftime('%z')
 
-    timeMin = datetime(t.year, t.month, t.day)
-    timeMin = timeMin.isoformat() + 'Z' # 'Z' indicates UTC time
-    enddate = datetime(t.year, t.month, t.day, 23, 59, 59)
-    timeMax = enddate.isoformat() + 'Z'
+    # get minimum and maximum time for today:
+    timeMin = datetime(lt.year, lt.month, lt.day)
+    timeMin = timeMin.isoformat() + local_tz # 'Z' indicates UTC time
+    enddate = datetime(lt.year, lt.month, lt.day, 23, 59, 59)
+    timeMax = enddate.isoformat() + local_tz
 
     events_result = service.events().list(calendarId='primary', timeMin=timeMin, timeMax=timeMax, singleEvents=True, orderBy='startTime').execute()
     events = events_result.get('items', [])
 
-    print('\n= {} =\n= Contents =\n'.format(local_time.strftime('%Y-%m-%d')))
+    print('= {} =\n= Contents =\n'.format(lt.strftime('%Y-%m-%d')))
 
     if not events:
         print('No upcoming events found.')
@@ -153,9 +156,8 @@ def print_today(service):
 
         # Cleanup Event Names to Remove Own Name
         # FIX: Move this into a function that generalizes
-        eventstr = re.sub(r' and Nick Feamster', '', eventstr)
-        eventstr = re.sub(r'\/Nick', '', eventstr)
         eventstr = re.sub(r'Nick\/', '', eventstr)
+        eventstr = re.sub(r'\/Nick.*', '', eventstr)
 
         # Vimwiki Format
         print('== {} ({}) =='.format(eventstr, starttime.strftime(timefmt)))
