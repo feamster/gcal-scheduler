@@ -41,6 +41,15 @@ dtfmt = datefmt + ' ' + timefmt
 
 ########
 
+def cleanup(eventstr):
+    # Cleanup Event Names to Remove Own Name
+    # FIX: Move this into a function that generalizes
+    eventstr = re.sub(r'Nick\/', '', eventstr)
+    eventstr = re.sub(r'\/Nick.*', '', eventstr)
+    eventstr = re.sub(r'Feamster', '', eventstr)
+    return eventstr
+
+
 def free_busy(service):
 
     # round the time down to the previous half-hour from now
@@ -152,13 +161,8 @@ def print_today(service):
         start = event['start'].get('dateTime', event['start'].get('date'))
         starttime = parse(start)
 
-        eventstr = event['summary']
-
-        # Cleanup Event Names to Remove Own Name
-        # FIX: Move this into a function that generalizes
-        eventstr = re.sub(r'Nick\/', '', eventstr)
-        eventstr = re.sub(r'\/Nick.*', '', eventstr)
-
+        eventstr = cleanup(event['summary'])
+        
         # Vimwiki Format
         print('== {} ({}) =='.format(eventstr, starttime.strftime(timefmt)))
 
@@ -180,7 +184,8 @@ def print_week(service):
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
         starttime = parse(start)
-        print(starttime.strftime(dtfmt), '\t', event['summary'])
+        eventstr = cleanup(event['summary'])
+        print(starttime.strftime(dtfmt), '\t', eventstr)
 
 ########
 
@@ -198,7 +203,8 @@ def print_next(service):
     for event in events:
         start = event['start'].get('dateTime', event['start'].get('date'))
         starttime = parse(start)
-        print(starttime.strftime(dtfmt), event['summary'])
+        eventstr = cleanup(event['summary'])
+        print(starttime.strftime(dtfmt), eventstr)
 
 
 #######
